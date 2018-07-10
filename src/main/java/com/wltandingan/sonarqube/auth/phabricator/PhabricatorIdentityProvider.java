@@ -1,5 +1,6 @@
 package com.wltandingan.sonarqube.auth.phabricator;
 
+
 import com.github.scribejava.core.builder.ServiceBuilder;
 import com.github.scribejava.core.model.*;
 import com.github.scribejava.core.oauth.OAuthService;
@@ -11,9 +12,12 @@ import org.sonar.api.server.authentication.OAuth2IdentityProvider;
 import org.sonar.api.server.authentication.UserIdentity;
 
 import javax.servlet.http.HttpServletRequest;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-import static java.lang.String.format;
 import static com.github.scribejava.core.utils.OAuthEncoder.encode;
+import static java.lang.String.format;
+
 
 /**
  * @author Willie Loyd Tandingan
@@ -103,11 +107,26 @@ public class PhabricatorIdentityProvider implements OAuth2IdentityProvider {
         if (!isEnabled()) {
             throw new IllegalStateException("Phabricator authentication is disabled");
         }
+
+        URI callback = URI.create(context.getCallbackUrl());
+
+        String sonarqubeOverrideBaseUrl = context.getRequest().getHeader("X-SonarQube-Override-Base-Url");
+        if (sonarqubeOverrideBaseUrl != null && !(sonarqubeOverrideBaseUrl = sonarqubeOverrideBaseUrl.trim()).isEmpty()) {
+            sonarqubeOverrideBaseUrl = sonarqubeOverrideBaseUrl.replace(":443/", "/");
+            URI override = URI.create(sonarqubeOverrideBaseUrl);
+            try {
+                callback = new URI("https", override.getAuthority(),
+                        callback.getPath().startsWith("/") ? callback.getPath() : "/" + callback.getPath(), callback.getQuery(), callback.getFragment());
+            } catch (URISyntaxException e) {
+                callback = URI.create(context.getCallbackUrl());
+            }
+        }
+
         return new ServiceBuilder()
                 .provider(scribeApi)
                 .apiKey(settings.clientId())
                 .apiSecret(settings.clientSecret())
                 .grantType("authorization_code")
-                .callback(context.getCallbackUrl());
+                .callback(callback.toASCIIString());
     }
 }
