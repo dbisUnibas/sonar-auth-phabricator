@@ -12,7 +12,9 @@ public class ConduitResponse<T> {
     @SerializedName("result")
     private T result;
 
-    public ConduitResponse() {}
+    public ConduitResponse() {
+        // making sure there is always the default constructor
+    }
 
     public T getResult() {
         return result;

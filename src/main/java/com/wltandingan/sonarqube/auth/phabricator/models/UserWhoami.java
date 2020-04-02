@@ -17,7 +17,9 @@ public class UserWhoami extends ConduitResponse<UserWhoami> {
     @SerializedName("primaryEmail")
     private String primaryEmail;
 
-    public UserWhoami() {}
+    public UserWhoami() {
+        // making sure there is always the default constructor
+    }
 
     public String getUserName() {
         return userName;

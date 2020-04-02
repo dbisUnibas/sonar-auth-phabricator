@@ -111,7 +111,13 @@ public class PhabricatorIdentityProvider implements OAuth2IdentityProvider {
         URI callback = URI.create(context.getCallbackUrl());
 
         String sonarqubeOverrideBaseUrl = context.getRequest().getHeader("X-SonarQube-Override-Base-Url");
-        if (sonarqubeOverrideBaseUrl != null && !(sonarqubeOverrideBaseUrl = sonarqubeOverrideBaseUrl.trim()).isEmpty()) {
+
+        if (sonarqubeOverrideBaseUrl == null)
+            sonarqubeOverrideBaseUrl = "";
+        else
+            sonarqubeOverrideBaseUrl = sonarqubeOverrideBaseUrl.trim();
+
+        if (!sonarqubeOverrideBaseUrl.isEmpty()) {
             sonarqubeOverrideBaseUrl = sonarqubeOverrideBaseUrl.replace(":443/", "/");
             URI override = URI.create(sonarqubeOverrideBaseUrl);
             try {
